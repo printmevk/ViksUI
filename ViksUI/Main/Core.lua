@@ -407,3 +407,26 @@ do
 	end
 end	
 
+-- Unified border function for all frames
+function CreateUnitFrameBorder(f, frameLevel)
+	if f.customBorder then return end
+	if not frameLevel then frameLevel = f:GetFrameLevel() and f:GetFrameLevel() + 1 or 1 end
+	
+	Mixin(f, BackdropTemplateMixin)
+	
+	f:SetBackdrop({
+		bgFile = C.media.blank,
+		edgeFile = "Interface\\Buttons\\WHITE8x8",
+		tile = false,
+		tileSize = 0,
+		edgeSize = mult,
+		insets = {left = -mult, right = -mult, top = -mult, bottom = -mult}
+	})
+	
+	f:SetBackdropColor(unpack(C.media.backdrop_color))
+	f:SetBackdropBorderColor(unpack(C.media.border_color))
+	f:SetFrameLevel(frameLevel)
+	f.customBorder = true
+	
+	return f
+end
