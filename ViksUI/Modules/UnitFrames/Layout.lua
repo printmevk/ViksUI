@@ -76,6 +76,49 @@ local function Shared(self, unit)
 		f:SetBackdropColor(unpack(C.media.backdrop_color))
 		f:SetBackdropBorderColor(unpack(C.media.border_color))
 	end
+	local shadows = {
+	edgeFile = "Interface\\AddOns\\ViksUI\\Media\\Other\\glowTex", 
+	edgeSize = 4,
+	insets = { left = 3, right = 3, top = 3, bottom = 3 }
+	}
+	
+	local shadows2 = {
+		bgFile =  [=[Interface\ChatFrame\ChatFrameBackground]=],
+		edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 1, 
+		insets = {left = -1, right = -1, top = -1, bottom = -1} 
+		}
+	function CreateShadow(f)
+		if f.shadow then return end
+		local shadow = CreateFrame("Frame", nil, f, "BackdropTemplate")
+		shadow:SetFrameLevel(1)
+		shadow:SetFrameStrata(f:GetFrameStrata())
+		shadow:SetPoint("TOPLEFT", -4, 4)
+		shadow:SetPoint("BOTTOMRIGHT", 4, -4)
+		shadow:SetBackdrop(shadows)
+		shadow:SetBackdropColor(0, 0, 0, 0)
+		shadow:SetBackdropBorderColor(0,0,0, 1)
+		f.shadow = shadow
+		return shadow
+	end
+
+	function CreateShadow_1(f)
+		if f.shadow then return end
+		local shadow = CreateFrame("Frame", nil, f, "BackdropTemplate")
+		shadow:SetFrameLevel(1)
+		shadow:SetFrameStrata(f:GetFrameStrata())
+		shadow:SetPoint("TOPLEFT", -4, 4)
+		shadow:SetPoint("BOTTOMRIGHT", 4, -4)
+		shadow:SetBackdrop(shadows)
+		shadow:SetBackdropColor(0, 0, 0, 0)
+		shadow:SetBackdropBorderColor(0, 0, 0, 1)
+		f.shadow = shadow
+		return shadow
+	end
+	--status bar filling fix
+	local fixStatusbar = function(b)
+		b:GetStatusBarTexture():SetHorizTile(false)
+		b:GetStatusBarTexture():SetVertTile(false)
+	end
 	-- self:CreateBackdrop("Default")
 	-- self:SetFrameStrata("BACKGROUND")
 	-- self.backdrop:SetFrameLevel(3)
@@ -84,11 +127,13 @@ local function Shared(self, unit)
 		
 		-- Portrait on RIGHT side (offset 40px to the right - SEPARATE FRAME)
 		self.Portrait = CreateFrame("Frame", self:GetName().."_Portrait", self, "BackdropTemplate")
-		self.Portrait:SetSize(C.unitframe.layout2_portrait, C.unitframe.layout2_h)
+		self.Portrait:SetSize(C.unitframe.layout2_portrait, C.unitframe.layout2_portrait)
 		self.Portrait:SetPoint("LEFT", self, "RIGHT", 40, 0)  -- 40px offset, completely separate
 		self.Portrait:SetFrameLevel(5)
 		self.Portrait:SetTemplate("Default")
+		-- ApplyLayout2Border(self.Portrait)
 		self.Portrait:SetBackdropColor(unpack(C.media.border_color)) -- No border, instead using backdrop to create 1px borderlook
+		CreateShadow_1(self.Portrait)
 		
 		self.Portrait.Icon = self.Portrait:CreateTexture(nil, "ARTWORK")
 		self.Portrait.Icon:SetAllPoints()
@@ -101,6 +146,7 @@ local function Shared(self, unit)
 		healthFrame:SetFrameLevel(6)
 		healthFrame:SetTemplate("Default")
 		healthFrame:SetBackdropColor(unpack(C.media.border_color))
+		CreateShadow_1(healthFrame)
 		
 		-- The actual StatusBar (invisible, for oUF to manage)
 		self.Health = CreateFrame("StatusBar", self:GetName().."_Health", healthFrame)
@@ -109,8 +155,11 @@ local function Shared(self, unit)
 		self.Health:SetFrameLevel(6)
 		self.Health.colorTapping = true
 		self.Health.colorDisconnected = true
-		self.Health.colorClass = true
-		self.Health.colorReaction = true
+		-- self.Health.colorClass = true
+		-- s:GetStatusBarTexture():SetHorizTile(true)
+		-- fixStatusbar(s)
+		-- self.Health.colorReaction = true
+		self.Health:SetStatusBarColor(.2,.2,.2,1)
 		if C.unitframe.plugins_smooth_bar == true then
 			self.Health.smoothing = Enum.StatusBarInterpolation.ExponentialEaseOut or 1
 		end
@@ -143,10 +192,11 @@ local function Shared(self, unit)
 		-- Power Visual Frame (offset -5, -5 from health)
 		local powerFrame = CreateFrame("Frame", self:GetName().."_PowerFrame", self, "BackdropTemplate")
 		powerFrame:SetSize(healthFrame:GetWidth(), C.unitframe.layout2_h)  -- Match health frame width
-		powerFrame:SetPoint("TOPLEFT", healthFrame, "TOPLEFT", -5, -5)
+		powerFrame:SetPoint("TOPLEFT", healthFrame, "TOPLEFT", -6, -6)
 		powerFrame:SetFrameLevel(5)
 		powerFrame:SetTemplate("Default")
 		powerFrame:SetBackdropColor(unpack(C.media.border_color))
+		CreateShadow_1(powerFrame)
 		
 		-- The actual StatusBar (invisible, for oUF to manage)
 		self.Power = CreateFrame("StatusBar", self:GetName().."_Power", powerFrame)
@@ -183,10 +233,12 @@ local function Shared(self, unit)
 		-- ===== TEXT BAR =====
 		-- Text Visual Frame (offset +6, -6 from power)
 		local textFrame = CreateFrame("Frame", self:GetName().."_TextFrame", self, "BackdropTemplate")
-		textFrame:SetSize(powerFrame:GetWidth(), C.unitframe.layout2_h)  -- Match power frame width
-		textFrame:SetPoint("TOPLEFT", powerFrame, "TOPLEFT", 6, -6)
+		textFrame:SetSize(healthFrame:GetWidth(), C.unitframe.layout2_h-2)  -- Match power frame width
+		textFrame:SetPoint("TOPRIGHT", healthFrame, "BOTTOMRIGHT", 6, 14)
 		textFrame:SetFrameLevel(4)
 		textFrame:SetTemplate("Default")
+		textFrame:SetBackdropColor(.106,.106,.106,1)
+		-- CreateShadow_1(textFrame)
 		
 		-- Texture inside the text frame
 		local textBarTexture = textFrame:CreateTexture(nil, "BACKGROUND")
