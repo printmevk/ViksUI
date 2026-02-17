@@ -78,6 +78,27 @@ local function Shared(self, unit)
 		self.backdrop:SetFrameLevel(3)
 	end
 	
+	if C.unitframe.layout2 then
+		-- Portrait on RIGHT side (offset 40px to the right - SEPARATE FRAME)
+		self.Portrait = CreateFrame("Frame", self:GetName().."_Portrait", self, "BackdropTemplate")
+		self.Portrait:SetSize(C.unitframe.layout2_portrait, C.unitframe.layout2_portrait)
+		
+		if unit == "player" then
+			self.Portrait:SetPoint(unpack(C.position.unitframes.player_portrait_2))
+		elseif unit == "target" then
+			self.Portrait:SetPoint(unpack(C.position.unitframes.target_portrait_2))
+		end
+		
+		self.Portrait:SetFrameLevel(5)
+		self.Portrait:SetTemplate("Default")
+		self.Portrait:SetBackdropColor(unpack(C.media.border_color)) -- No border, instead using backdrop to create 1px borderlook
+		CreateShadow(self.Portrait)
+		
+		self.Portrait.Icon = self.Portrait:CreateTexture(nil, "ARTWORK")
+		self.Portrait.Icon:SetAllPoints()
+		self.Portrait.Icon:SetTexCoord(0.15, 0.85, 0.15, 0.85)
+	end
+	
 	-- Health bar
 	self.Health = CreateFrame("StatusBar", self:GetName().."_Health", self)
 	if unit == "player" or unit == "target" or unit == "arena" or unit == "boss" then
@@ -107,7 +128,7 @@ local function Shared(self, unit)
 		self.Health.smoothing = Enum.StatusBarInterpolation.ExponentialEaseOut or 1
 	end
 
-	if C.unitframe.layout2 and unit == "player" then
+	if C.unitframe.layout2 then
 		-- Health Frame - takes up LEFT portion of main frame (NOT affected by portrait offset)
 		local healthFrame = CreateFrame("Frame", self:GetName().."_HealthFrame", self, "BackdropTemplate")
 		healthFrame:SetSize(C.unitframe.layout2_w, C.unitframe.layout2_h)
@@ -143,7 +164,7 @@ local function Shared(self, unit)
 	else
 		self.Health.bg.multiplier = 0.2
 	end
-	if C.unitframe.layout2 and unit == "player" then
+	if C.unitframe.layout2 then
 		self.Health.bg:SetTexture(C.unitframe.layout2_health_texture)
 		self.Health.bg:SetVertexColor(0.1, 0.1, 0.1, 0.2)
 	end
@@ -222,12 +243,16 @@ local function Shared(self, unit)
 		if C.unitframe.plugins_smooth_bar == true then
 			self.Power.smoothing = Enum.StatusBarInterpolation.ExponentialEaseOut or 1
 		end
-		if C.unitframe.layout2 and unit == "player" then
+		if C.unitframe.layout2 then
 			-- ===== POWER BAR =====
 			-- Power Visual Frame (offset -5, -5 from health)
 			local powerFrame = CreateFrame("Frame", self:GetName().."_PowerFrame", self, "BackdropTemplate")
 			powerFrame:SetSize(C.unitframe.layout2_w, C.unitframe.layout2_h)
-			powerFrame:SetPoint("TOPLEFT", self.Health, "TOPLEFT", -6, -7)
+			if unit == "player" then
+				powerFrame:SetPoint("TOPLEFT", self.Health, "TOPLEFT", -6, -7)
+			elseif unit == "target" then
+				powerFrame:SetPoint("TOPRIGHT", self.Health, "TOPRIGHT", 6, -7)
+			end
 			powerFrame:SetFrameLevel(5)
 			powerFrame:SetTemplate("Default")
 			powerFrame:SetBackdropColor(unpack(C.media.border_color))
