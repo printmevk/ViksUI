@@ -63,12 +63,20 @@ local function Shared(self, unit)
 	
 	-- Backdrop for every units
 	if C.unitframe.layout2 then
-		self:CreateBackdrop("Invisible")
+		if unit ~= "player" or unit ~= "target" then
+			self:CreateBackdrop("Invisible")
+			if self.backdrop then
+				self.backdrop:SetBackdropBorderColor(0, 0, 0, 0)
+				self.backdrop:SetBackdrop({edgeFile = nil})  -- Remove the edge file completely
+			end
+		end
 	else	
 		self:CreateBackdrop("Default")
 	end
 	self:SetFrameStrata("BACKGROUND")
-	self.backdrop:SetFrameLevel(3)
+	if self.backdrop then
+		self.backdrop:SetFrameLevel(3)
+	end
 	
 	-- Health bar
 	self.Health = CreateFrame("StatusBar", self:GetName().."_Health", self)
@@ -99,13 +107,13 @@ local function Shared(self, unit)
 		self.Health.smoothing = Enum.StatusBarInterpolation.ExponentialEaseOut or 1
 	end
 
-	if C.unitframe.layout2 and unit == "player" then	
+	if C.unitframe.layout2 and unit == "player" then
 		-- Health Frame - takes up LEFT portion of main frame (NOT affected by portrait offset)
 		local healthFrame = CreateFrame("Frame", self:GetName().."_HealthFrame", self, "BackdropTemplate")
 		healthFrame:SetSize(C.unitframe.layout2_w, C.unitframe.layout2_h)
 		healthFrame:SetPoint("LEFT", self, "LEFT", 0, 0)
 		healthFrame:SetFrameLevel(6)
-		healthFrame:SetTemplate("Default")
+		healthFrame:SetTemplate("Invisible")
 		healthFrame:SetBackdropColor(unpack(C.media.border_color))
 		CreateShadow(healthFrame)
 		
@@ -234,6 +242,8 @@ local function Shared(self, unit)
 		else
 			self.Power.PostUpdateColor = T.PostUpdatePowerColor
 		end
+		self.Power.colorClass = true
+		self.Power.PostUpdateColor = T.PostUpdatePowerColor
 		self.Power.PostUpdate = T.PostUpdatePower
 		self:RegisterEvent("UNIT_FLAGS", T.ForceUpdate)
 		self:RegisterEvent("UNIT_FACTION", T.ForceUpdate)
@@ -269,7 +279,7 @@ local function Shared(self, unit)
 			local textBarTexture = textFrame:CreateTexture(nil, "BACKGROUND")
 			textBarTexture:SetAllPoints()
 			textBarTexture:SetTexture(C.unitframe.layout2_textbar_texture)
-			textBarTexture:SetVertexColor(.106,.106,.106,1)
+			textBarTexture:SetVertexColor(.125,.125,.125,1)
 		end
 		if unit ~= "pet" and unit ~= "focus" and unit ~= "focustarget" and unit ~= "targettarget" then
 			self.Power.value = T.SetFontString(self.Power, C.font.unit_frames_font, C.font.unit_frames_font_size, C.font.unit_frames_font_style)
