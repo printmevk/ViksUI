@@ -63,13 +63,22 @@ local function Shared(self, unit)
 		self:SetAttribute("*type2", "togglemenu")
 	end
 
-	-- Backdrop for every units
-	self:CreateBackdrop("Default")
-	self:SetFrameStrata("BACKGROUND")
-	self.backdrop:SetFrameLevel(3)
-
 	-- ========== LAYOUT2 CONDITIONAL ==========
 	if C.unitframe.layout2 and unit == "player" then
+	function frame1px2_2(f) --//Viks
+		f:SetBackdrop({
+			bgFile =  [=[Interface\ChatFrame\ChatFrameBackground]=],
+			edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 1, 
+			insets = {left = 1, right = 1, top = 1, bottom = 1} 
+		})
+		f:SetPoint("TOPLEFT", -1, 1)
+		f:SetPoint("BOTTOMRIGHT", 1, -1)
+		f:SetBackdropColor(unpack(C.media.backdrop_color))
+		f:SetBackdropBorderColor(unpack(C.media.border_color))
+	end
+	-- self:CreateBackdrop("Default")
+	-- self:SetFrameStrata("BACKGROUND")
+	-- self.backdrop:SetFrameLevel(3)
 		-- ===== LAYOUT2 PLAYER FRAME =====
 		self:SetSize(C.unitframe.layout2_w, C.unitframe.layout2_h)
 		
@@ -79,6 +88,7 @@ local function Shared(self, unit)
 		self.Portrait:SetPoint("LEFT", self, "RIGHT", 40, 0)  -- 40px offset, completely separate
 		self.Portrait:SetFrameLevel(5)
 		self.Portrait:SetTemplate("Default")
+		self.Portrait:SetBackdropColor(unpack(C.media.border_color)) -- No border, instead using backdrop to create 1px borderlook
 		
 		self.Portrait.Icon = self.Portrait:CreateTexture(nil, "ARTWORK")
 		self.Portrait.Icon:SetAllPoints()
@@ -90,6 +100,7 @@ local function Shared(self, unit)
 		healthFrame:SetPoint("LEFT", self, "LEFT", 0, 0)
 		healthFrame:SetFrameLevel(6)
 		healthFrame:SetTemplate("Default")
+		healthFrame:SetBackdropColor(unpack(C.media.border_color))
 		
 		-- The actual StatusBar (invisible, for oUF to manage)
 		self.Health = CreateFrame("StatusBar", self:GetName().."_Health", healthFrame)
@@ -109,6 +120,7 @@ local function Shared(self, unit)
 		-- Health bar background
 		self.Health.bg = self.Health:CreateTexture(nil, "BORDER")
 		self.Health.bg:SetAllPoints()
+		-- self.Health.bg:SetBackdropColor(unpack(C.media.border_color))
 		self.Health.bg:SetTexture(C.unitframe.layout2_health_texture)
 		self.Health.bg:SetVertexColor(0.1, 0.1, 0.1, 0.2)
 		
@@ -134,6 +146,7 @@ local function Shared(self, unit)
 		powerFrame:SetPoint("TOPLEFT", healthFrame, "TOPLEFT", -5, -5)
 		powerFrame:SetFrameLevel(5)
 		powerFrame:SetTemplate("Default")
+		powerFrame:SetBackdropColor(unpack(C.media.border_color))
 		
 		-- The actual StatusBar (invisible, for oUF to manage)
 		self.Power = CreateFrame("StatusBar", self:GetName().."_Power", powerFrame)
@@ -607,6 +620,10 @@ local function Shared(self, unit)
 
 	-- ===== DEFAULT LAYOUT (all units when Layout2 is disabled) =====
 	if not C.unitframe.layout2 then
+	-- Backdrop for every units
+	self:CreateBackdrop("Default")
+	self:SetFrameStrata("BACKGROUND")
+	self.backdrop:SetFrameLevel(3)
 		-- Health bar
 		self.Health = CreateFrame("StatusBar", self:GetName().."_Health", self)
 		if unit == "player" or unit == "target" or unit == "arena" or unit == "boss" then
