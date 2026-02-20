@@ -1,5 +1,5 @@
 local T, C, L = unpack(ViksUI)
-if C.unitframe.enable ~= true then return end
+if C.unitframe.enable ~= true and C.nameplate.enable ~= true then return end
 
 ----------------------------------------------------------------------------------------
 --	Unit frames functions
@@ -445,43 +445,56 @@ T.PostUpdatePowerColor = function(power, unit, color, altR, altG, altB)
 	T.PostUpdatePowerBackdropColor(power, color, altR, altG, altB)
 
 	if UnitIsConnected(unit) and not UnitIsDeadOrGhost(unit) then
+		-- Check if we should use class color instead of power color
+		if power.colorClass and (UnitIsPlayer(unit) or UnitInPartyIsAI(unit)) then
+			local _, class = UnitClass(unit)
+			local classColor = T.oUF_colors.class[class]
+			if classColor then
+				power:SetStatusBarColor(classColor:GetRGB())
+				if power.value then
+					power.value:SetTextColor(classColor:GetRGB())
+				end
+				return
+			end
+		end
+		
+		-- Fall back to power color
 		local _, pToken = UnitPowerType(unit)
-
-		local color = T.oUF_colors.power[pToken]
-		if color then
-			power:SetStatusBarColor(color:GetRGB())
+		local powerColor = T.oUF_colors.power[pToken]
+		if powerColor then
+			power:SetStatusBarColor(powerColor:GetRGB())
 			if power.value then
-				power.value:SetTextColor(color:GetRGB())
+				power.value:SetTextColor(powerColor:GetRGB())
 			end
 		end
 	end
 end
 
-local SetUpAnimGroup = function(self)
-	self.anim = self:CreateAnimationGroup()
-	self.anim:SetLooping("BOUNCE")
-	self.anim.fade = self.anim:CreateAnimation("Alpha")
-	self.anim.fade:SetFromAlpha(1)
-	self.anim.fade:SetToAlpha(0)
-	self.anim.fade:SetDuration(0.6)
-	self.anim.fade:SetSmoothing("IN_OUT")
-end
+-- local SetUpAnimGroup = function(self)
+	-- self.anim = self:CreateAnimationGroup()
+	-- self.anim:SetLooping("BOUNCE")
+	-- self.anim.fade = self.anim:CreateAnimation("Alpha")
+	-- self.anim.fade:SetFromAlpha(1)
+	-- self.anim.fade:SetToAlpha(0)
+	-- self.anim.fade:SetDuration(0.6)
+	-- self.anim.fade:SetSmoothing("IN_OUT")
+-- end
 
-local Flash = function(self)
-	if not self.anim then
-		SetUpAnimGroup(self)
-	end
+-- local Flash = function(self)
+	-- if not self.anim then
+		-- SetUpAnimGroup(self)
+	-- end
 
-	if not self.anim:IsPlaying() then
-		self.anim:Play()
-	end
-end
+	-- if not self.anim:IsPlaying() then
+		-- self.anim:Play()
+	-- end
+-- end
 
-local StopFlash = function(self)
-	if self.anim then
-		self.anim:Finish()
-	end
-end
+-- local StopFlash = function(self)
+	-- if self.anim then
+		-- self.anim:Finish()
+	-- end
+-- end
 
 local low_mana = C_CurveUtil.CreateColorCurve()
 low_mana:SetType(Enum.LuaCurveType.Step)
@@ -515,7 +528,7 @@ T.UpdateManaLevel = function(self, elapsed)
 		end
 	elseif T.class ~= "DRUID" and T.class ~= "PRIEST" and T.class ~= "SHAMAN" then
 		self.ManaLevel:SetText()
-		StopFlash(self)
+		-- StopFlash(self)
 	end
 end
 
@@ -773,7 +786,7 @@ T.AuraTrackerTime = function(self, elapsed)
 	end
 end
 
-T.PostCreateIcon = function(element, button)
+T.PostCreateIcon = function(_, button)
 	button:SetTemplate("Default")
 
 	T.SkinCooldown(button.Cooldown, "aura")
@@ -816,7 +829,7 @@ for i, color in pairs(dispelIndex) do
 end
 T.DispelCurve = curve
 
-T.PostUpdateIcon = function(element, button, unit, data)
+T.PostUpdateIcon = function(_, button, unit, data)
 	if data.isHarmfulAura then
 		if not UnitIsFriend("player", unit) and not data.isPlayerAura then
 			if not C.aura.player_aura_only then
@@ -837,11 +850,6 @@ T.PostUpdateIcon = function(element, button, unit, data)
 	else
 		local color = C_CurveUtil.EvaluateColorFromBoolean(data.isStealable, {r = 1, g = 0.85, b = 0, a = 1}, {r = C.media.border_color[1], g = C.media.border_color[2], b = C.media.border_color[3], a = 1})
 		button:SetBackdropBorderColor(color:GetRGB())
-		if (T.class == "MAGE" or T.class == "PRIEST" or T.class == "SHAMAN" or T.class == "HUNTER") and data.dispelName == "Magic" and not UnitIsFriend("player", unit) then -- this is work? data.dispelName is often nil
-			button:SetBackdropBorderColor(1, 0.85, 0)
-		else
-			button:SetBackdropBorderColor(unpack(C.media.border_color))
-		end
 		button.Icon:SetDesaturated(false)
 	end
 end
@@ -850,7 +858,7 @@ T.PostUpdateGapButton = function(_, _, button)
 	button:Hide()
 end
 
-T.CreateRaidBuffIcon = function(element, button)
+T.CreateRaidBuffIcon = function(_, button)
 	if not C.raidframe.plugins_buffs_timer then
 		button.Cooldown:SetHideCountdownNumbers(true)
 	end
@@ -876,7 +884,7 @@ T.CreateRaidBuffIcon = function(element, button)
 	end
 end
 
-T.PostUpdateRaidButton = function(element, button, unit, data)
+T.PostUpdateRaidButton = function(_, button, unit, data)
 	if C.aura.debuff_color_type then
 		local color = C_UnitAuras.GetAuraDispelTypeColor(unit, data.auraInstanceID, T.DispelCurve)
 		if color then

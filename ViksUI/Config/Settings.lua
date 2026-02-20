@@ -205,9 +205,9 @@ C["skins"] = {
 C["unitframe"] = {
 	-- Main
 	["enable"] = true,							-- Enable unit frames
-	["own_color"] = false,						-- Set your color for health bars
-	["uf_color"] = {0.4, 0.4, 0.4},				-- Color of health bars if ["own_color"] = true
-	["uf_color_bg"] = {0.1, 0.1, 0.1},			-- Color of health background
+	["own_color"] = true,						-- Set your color for health bars
+	["uf_color"] = {.2,.2,.2,1},				-- Color of health bars if ["own_color"] = true
+	["uf_color_bg"] = {.06,.06,.06, 1},			-- Color of health background
 	["enemy_health_color"] = true,				-- If enable, enemy target healthbar color is red
 	["show_total_value"] = false,				-- Display of info text on player and target with XXXX/Total
 	["color_value"] = false,					-- Health/mana value is colored
@@ -234,7 +234,7 @@ C["unitframe"] = {
 	["icons_combat"] = true,					-- Combat icon
 	["icons_resting"] = true,					-- Resting icon
 	-- Portraits
-	["portrait_enable"] = false,				-- Enable player/target portraits
+	["portrait_enable"] = true,					-- Enable player/target portraits
 	["portrait_classcolor_border"] = true,		-- Enable classcolor border
 	["portrait_type"] = "3D",					-- Type of portraits (3D, 2D, ICONS, OVERLAY)
 	["portrait_height"] = 92,					-- Portrait height
@@ -259,6 +259,14 @@ C["unitframe"] = {
 	["extra_power_height"] = 0,					-- Additional height for power
 	["castbar_width"] = 194,					-- Player and Target castbar width
 	["castbar_height"] = 16,					-- Player and Target castbar height
+	-- Layout2 Options (NEW)
+	["layout2"] = true,						-- Enable Layout2 design
+	["layout2_portrait"] = 58,					-- Portrait size for layout2
+	["layout2_w"] = 245,						-- Frame width for layout2
+	["layout2_h"] = 36,							-- Frame height for layout2
+	["layout2_health_texture"] = "Interface\\AddOns\\ViksUI\\Media\\textures\\normTex", -- Health bar texture
+	["layout2_power_texture"] = "Interface\\AddOns\\ViksUI\\Media\\textures\\normTex",   -- Power bar texture
+	["layout2_textbar_texture"] = "Interface\\AddOns\\ViksUI\\Media\\textures\\backdrop", -- Text bar texture
 }
 
 ----------------------------------------------------------------------------------------

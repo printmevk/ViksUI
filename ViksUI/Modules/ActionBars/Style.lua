@@ -13,8 +13,6 @@ local function StyleNormalButton(button, size)
 		local hotkey = _G[name.."HotKey"]
 		local border = button.Border or _G[name.."Border"]
 		local btname = _G[name.."Name"]
-		local normal = button.NormalTexture or _G[name.."NormalTexture"]
-		local normal2 = button:GetNormalTexture()
 		local float = _G[name.."FloatingBG"]
 		local highlight = button.SpellHighlightTexture
 		local isExtraAction = name:match("ExtraAction")
@@ -264,7 +262,7 @@ function T.StyleShift()
 end
 
 function T.StylePet()
-	for i = 1, NUM_PET_ACTION_SLOTS do
+	for i = 1, 10 do
 		local name = "PetActionButton"..i
 		local button = _G[name]
 		StyleSmallButton(button, name, true)

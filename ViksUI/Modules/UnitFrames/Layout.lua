@@ -7,25 +7,6 @@ if C.unitframe.enable ~= true then return end
 local _, ns = ...
 local oUF = ns.oUF
 
--- Create shadow effect // Viks
-local function CreateShadow(f)
-	if f.shadow then return end
-	local shadow = CreateFrame("Frame", nil, f, "BackdropTemplate")
-	shadow:SetFrameLevel(1)
-	shadow:SetFrameStrata(f:GetFrameStrata())
-	shadow:SetPoint("TOPLEFT", -4, 4)
-	shadow:SetPoint("BOTTOMRIGHT", 4, -4)
-	shadow:SetBackdrop({
-		edgeFile = "Interface\\AddOns\\ViksUI\\Media\\Other\\glowTex",
-		edgeSize = 4,
-		insets = { left = 3, right = 3, top = 3, bottom = 3 }
-	})
-	shadow:SetBackdropColor(0, 0, 0, 0)
-	shadow:SetBackdropBorderColor(0, 0, 0, 1)
-	f.shadow = shadow
-	return shadow
-end
-
 -- Frame size
 if C.unitframe.extra_height_auto then
 	C.unitframe.extra_health_height = C.font.unit_frames_font_size - 8
@@ -60,45 +41,12 @@ local function Shared(self, unit)
 	else
 		self:SetAttribute("*type2", "togglemenu")
 	end
-	
+
 	-- Backdrop for every units
-	if C.unitframe.layout2 then
-		if unit ~= "player" or unit ~= "target" then
-			self:CreateBackdrop("Invisible")
-			if self.backdrop then
-				self.backdrop:SetBackdropBorderColor(0, 0, 0, 0)
-				self.backdrop:SetBackdrop({edgeFile = nil})  -- Remove the edge file completely
-			end
-		end
-	else	
-		self:CreateBackdrop("Default")
-	end
+	self:CreateBackdrop("Default")
 	self:SetFrameStrata("BACKGROUND")
-	if self.backdrop then
-		self.backdrop:SetFrameLevel(3)
-	end
-	
-	if C.unitframe.layout2 then
-		-- Portrait on RIGHT side (offset 40px to the right - SEPARATE FRAME)
-		self.Portrait = CreateFrame("Frame", self:GetName().."_Portrait", self, "BackdropTemplate")
-		self.Portrait:SetSize(C.unitframe.layout2_portrait, C.unitframe.layout2_portrait)
-		
-		if unit == "player" then
-			self.Portrait:SetPoint(unpack(C.position.unitframes.player_portrait_2))
-		elseif unit == "target" then
-			self.Portrait:SetPoint(unpack(C.position.unitframes.target_portrait_2))
-		end
-		
-		self.Portrait:SetFrameLevel(5)
-		self.Portrait:SetTemplate("Default")
-		self.Portrait:SetBackdropColor(unpack(C.media.border_color)) -- No border, instead using backdrop to create 1px borderlook
-		CreateShadow(self.Portrait)
-		
-		self.Portrait.Icon = self.Portrait:CreateTexture(nil, "ARTWORK")
-		self.Portrait.Icon:SetAllPoints()
-		self.Portrait.Icon:SetTexCoord(0.15, 0.85, 0.15, 0.85)
-	end
-	
+	self.backdrop:SetFrameLevel(3)
+
 	-- Health bar
 	self.Health = CreateFrame("StatusBar", self:GetName().."_Health", self)
 	if unit == "player" or unit == "target" or unit == "arena" or unit == "boss" then
@@ -111,7 +59,7 @@ local function Shared(self, unit)
 	self.Health:SetPoint("TOPLEFT", self, "TOPLEFT", 0, 0)
 	self.Health:SetPoint("TOPRIGHT", self, "TOPRIGHT", 0, 0)
 	self.Health:SetStatusBarTexture(C.media.texture)
-	
+
 	if C.unitframe.own_color == true then
 		self.Health.colorTapping = false
 		self.Health.colorDisconnected = false
@@ -128,30 +76,6 @@ local function Shared(self, unit)
 		self.Health.smoothing = Enum.StatusBarInterpolation.ExponentialEaseOut or 1
 	end
 
-	if C.unitframe.layout2 then
-		-- Health Frame - takes up LEFT portion of main frame (NOT affected by portrait offset)
-		local healthFrame = CreateFrame("Frame", self:GetName().."_HealthFrame", self, "BackdropTemplate")
-		healthFrame:SetSize(C.unitframe.layout2_w, C.unitframe.layout2_h)
-		healthFrame:SetPoint("LEFT", self, "LEFT", 0, 0)
-		healthFrame:SetFrameLevel(6)
-		healthFrame:SetTemplate("Invisible")
-		healthFrame:SetBackdropColor(unpack(C.media.border_color))
-		CreateShadow(healthFrame)
-		
-		-- The actual StatusBar (invisible, for oUF to manage)
-		self.Health = CreateFrame("StatusBar", self:GetName().."_Health", healthFrame)
-		self.Health:SetAllPoints()
-		self.Health:SetStatusBarTexture(C.unitframe.layout2_health_texture)
-		self.Health:SetFrameLevel(6)
-		self.Health.colorTapping = true
-		self.Health.colorDisconnected = true
-		-- self.Health.colorClass = true
-		-- s:GetStatusBarTexture():SetHorizTile(true)
-		-- fixStatusbar(s)
-		-- self.Health.colorReaction = true
-		self.Health:SetStatusBarColor(.2,.2,.2,1)
-	end
-	
 	self.Health.PostUpdate = T.PostUpdateHealth
 	self.Health.PostUpdateColor = T.PostUpdateHealthColor
 
@@ -164,11 +88,7 @@ local function Shared(self, unit)
 	else
 		self.Health.bg.multiplier = 0.2
 	end
-	if C.unitframe.layout2 then
-		self.Health.bg:SetTexture(C.unitframe.layout2_health_texture)
-		self.Health.bg:SetVertexColor(0.1, 0.1, 0.1, 0.2)
-	end
-	
+
 	if unit ~= "arenatarget" then
 		self.Health.value = T.SetFontString(self.Health, C.font.unit_frames_font, C.font.unit_frames_font_size, C.font.unit_frames_font_style)
 		if unit == "player" or unit == "pet" or unit == "focus" then
@@ -243,36 +163,7 @@ local function Shared(self, unit)
 		if C.unitframe.plugins_smooth_bar == true then
 			self.Power.smoothing = Enum.StatusBarInterpolation.ExponentialEaseOut or 1
 		end
-		if C.unitframe.layout2 then
-			-- ===== POWER BAR =====
-			-- Power Visual Frame (offset -5, -5 from health)
-			local powerFrame = CreateFrame("Frame", self:GetName().."_PowerFrame", self, "BackdropTemplate")
-			powerFrame:SetSize(C.unitframe.layout2_w, C.unitframe.layout2_h)
-			if unit == "player" then
-				powerFrame:SetPoint("TOPLEFT", self.Health, "TOPLEFT", -6, -7)
-			elseif unit == "target" then
-				powerFrame:SetPoint("TOPRIGHT", self.Health, "TOPRIGHT", 6, -7)
-			end
-			powerFrame:SetFrameLevel(5)
-			powerFrame:SetTemplate("Default")
-			powerFrame:SetBackdropColor(unpack(C.media.border_color))
-			CreateShadow(powerFrame)
-			
-			-- The actual StatusBar (invisible, for oUF to manage)
-			self.Power = CreateFrame("StatusBar", self:GetName().."_Power", powerFrame)
-			self.Power:SetAllPoints()
-			self.Power:SetStatusBarTexture(C.unitframe.layout2_power_texture)
-			self.Power:SetFrameLevel(5)
-			self.Power.colorClass = true
-		else
-			self.Power.PostUpdateColor = T.PostUpdatePowerColor
-		end
-		self.Power.colorClass = true
-		self.Power.PostUpdateColor = T.PostUpdatePowerColor
-		self.Power.PostUpdate = T.PostUpdatePower
-		self:RegisterEvent("UNIT_FLAGS", T.ForceUpdate)
-		self:RegisterEvent("UNIT_FACTION", T.ForceUpdate)
-		
+
 		self.Power.PostUpdate = T.PostUpdatePower
 		self.Power.PostUpdateColor = T.PostUpdatePowerColor
 		self:RegisterEvent("UNIT_FLAGS", T.ForceUpdate)		-- Force when dead, to hide power
@@ -286,26 +177,7 @@ local function Shared(self, unit)
 		else
 			self.Power.bg.multiplier = 0.2
 		end
-		if C.unitframe.layout2 and unit == "player" then
-			self.Power.bg:SetTexture(C.unitframe.layout2_power_texture)
-			self.Power.bg:SetVertexColor(0.1, 0.1, 0.1, 0.2)
-		end
-		if C.unitframe.layout2 and unit == "player" then -- Frame to show text on
-			-- ===== TEXT BAR =====
-			-- Text Visual Frame (offset +6, -6 from power)
-			local textFrame = CreateFrame("Frame", self:GetName().."_TextFrame", self, "BackdropTemplate")
-			textFrame:SetSize(C.unitframe.layout2_w, C.unitframe.layout2_h)
-			textFrame:SetPoint("TOPRIGHT", self.Health, "BOTTOMRIGHT", 6, 13)
-			textFrame:SetFrameLevel(4)
-			textFrame:SetTemplate("Default")
-			-- CreateShadow_1(textFrame)
-			
-			-- Texture inside the text frame
-			local textBarTexture = textFrame:CreateTexture(nil, "BACKGROUND")
-			textBarTexture:SetAllPoints()
-			textBarTexture:SetTexture(C.unitframe.layout2_textbar_texture)
-			textBarTexture:SetVertexColor(.125,.125,.125,1)
-		end
+
 		if unit ~= "pet" and unit ~= "focus" and unit ~= "focustarget" and unit ~= "targettarget" then
 			self.Power.value = T.SetFontString(self.Power, C.font.unit_frames_font, C.font.unit_frames_font_size, C.font.unit_frames_font_style)
 			if unit == "player" then
@@ -902,7 +774,7 @@ local function Shared(self, unit)
 	end
 
 	if unit == "player" or unit == "target" then
-		if C.unitframe.portrait_enable and not C.unitframe.layout2 then
+		if C.unitframe.portrait_enable == true then
 			if C.unitframe.portrait_type == "3D" or C.unitframe.portrait_type == "OVERLAY" then
 				self.Portrait = CreateFrame("PlayerModel", self:GetName().."_Portrait", self)
 			else

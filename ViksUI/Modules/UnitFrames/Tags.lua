@@ -226,6 +226,42 @@ local utf8sub = function(string, i, dots)
 	end
 end
 
+local SVal = function(val)
+	if val then
+		if (val >= 1e6) then
+			return ("%.1fm"):format(val / 1e6)
+		elseif (val >= 1e3) then
+			return ("%.1fk"):format(val / 1e3)
+		else
+			return ("%d"):format(val)
+		end
+	end
+end
+
+oUF.Tags.Methods["drk:afkdnd"] = function(unit) 
+	
+	return UnitIsAFK(unit) and "|cffCFCFCF <afk>|r" or UnitIsDND(unit) and "|cffCFCFCF <dnd>|r" or ""
+end
+oUF.Tags.Events["drk:afkdnd"] = "PLAYER_FLAGS_CHANGED"
+
+oUF.Tags.Methods['drk:color'] = function(u, r)
+	local _, class = UnitClass(u)
+	local reaction = UnitReaction(u, "player")
+	
+	if UnitIsDead(u) or UnitIsGhost(u) or not UnitIsConnected(u) then
+		return "|cffA0A0A0"
+	elseif (UnitIsTapDenied(u) and not UnitPlayerControlled(u)) then
+		return hex(oUF.colors.tapped)
+	elseif (UnitIsPlayer(u) or UnitInPartyIsAI(u))then
+		return hex(oUF.colors.class[class])
+	elseif reaction then
+		return hex(oUF.colors.reaction[reaction])
+	else
+		return hex(1, 1, 1)
+	end
+end
+oUF.Tags.Events['drk:color'] = 'UNIT_HEALTH'
+
 oUF.Tags.Methods['drk:color2'] = function(u, r)
 	local _, class = UnitClass(u)
 	local reaction = UnitReaction(u, "player")
@@ -250,3 +286,82 @@ oUF.Tags.Methods["drk:afkdnd"] = function(unit)
 end
 oUF.Tags.Events["drk:afkdnd"] = "PLAYER_FLAGS_CHANGED"
 
+oUF.Tags.Methods["drk:level"] = function(unit)
+	
+	local c = UnitClassification(unit)
+	local l = UnitLevel(unit)
+	local d = GetQuestDifficultyColor(l)
+	
+	local str = l
+		
+	if l <= 0 then l = "??" end
+	
+	if c == "worldboss" then
+		str = string.format("|cff%02x%02x%02xBoss|r",250,20,0)
+	elseif c == "eliterare" then
+		str = string.format("|cff%02x%02x%02x%s|r|cff0080FFR|r+",d.r*255,d.g*255,d.b*255,l)
+	elseif c == "elite" then
+		str = string.format("|cff%02x%02x%02x%s|r+",d.r*255,d.g*255,d.b*255,l)
+	elseif c == "rare" then
+		str = string.format("|cff%02x%02x%02x%s|r|cff0080FFR|r",d.r*255,d.g*255,d.b*255,l)
+	else
+		if not UnitIsConnected(unit) then
+			str = "??"
+		else
+			if UnitIsPlayer(unit) then
+				str = string.format("|cff%02x%02x%02x%s",d.r*255,d.g*255,d.b*255,l)
+			elseif UnitPlayerControlled(unit) then
+				str = string.format("|cff%02x%02x%02x%s",d.r*255,d.g*255,d.b*255,l)
+			else
+				str = string.format("|cff%02x%02x%02x%s",d.r*255,d.g*255,d.b*255,l)
+			end
+		end		
+	end
+	
+	return str
+end
+
+oUF.Tags.Events["drk:level"] = "UNIT_LEVEL PLAYER_LEVEL_UP UNIT_CLASSIFICATION_CHANGED"
+
+oUF.Tags.Methods['drk:Shp'] = function(u)
+	local current = UnitHealthMax(u) - UnitHealth(u)
+	local per = UnitHealthPercent(unit, true, CurveConstants.ScaleTo100)
+	if(current > 0) then
+	return "|cffff0000".."-"..SVal(current).." | "..per.."|r"
+	end
+end
+oUF.Tags.Events['drk:Shp'] = 'UNIT_HEALTH'
+
+oUF.Tags.Events['drk:power2'] = 'UNIT_MAXPOWER UNIT_POWER_UPDATE'
+oUF.Tags.Methods['drk:power2'] = function(unit)
+	local curpp, maxpp = UnitPower(unit), UnitPowerMax(unit);
+	local playerClass, englishClass = UnitClass(unit);
+
+	if(maxpp == 0) then
+		return ""
+	else
+		if (englishClass == "WARRIOR") then
+			return curpp
+		elseif (englishClass == "DEATHKNIGHT" or englishClass == "ROGUE" or englishClass == "HUNTER") then
+			return curpp .. ' /' .. maxpp
+		else
+			return SVal(curpp) .. " /" .. SVal(maxpp) .. " | " .. math.floor(curpp/maxpp*100+0.5) .. "%"
+		end
+	end
+end;
+
+oUF.Tags.Methods['cur|max'] = function(u)
+	local cur, max = UnitHealth(u), UnitHealthMax(u)
+	--local cur = max-min
+	local r, g, b
+	
+	local status = not UnitIsConnected(u) and 'Offline' or UnitIsGhost(u) and 'Ghost' or UnitIsDead(u) and 'Dead'
+	
+	if(max ~= 0) then
+		r, g, b = oUF.ColorGradient(cur, max, .89,.11,.11, .89,.89,.11, .33,.59,.33)
+	end
+	
+	return status and status or ('%s%s | |cff2f9717%s|r'):format(Hex(r, g, b), SVal(cur), SVal(max))
+end
+
+oUF.Tags.Events['cur|max'] = 'UNIT_HEALTH'
